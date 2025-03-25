@@ -1,0 +1,84 @@
+name: Deploy ProofWork
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+      
+      - name: Install global dependencies
+        run: |
+          npm install -g hardhat vercel @web3-storage/w3cli
+          sudo apt-get update && sudo apt-get install -y jq
+      
+      - name: Configure Vercel
+        run: |
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+          mkdir -p .vercel
+      
+      - name: Set execution permissions for the deployment script
+        run: chmod +x ./scripts/deploy-all.sh
+      
+      - name: Execute deployment script
+        run: ./scripts/deploy-all.sh
+        env:
+          NETWORK: ${{ secrets.DEPLOY_NETWORK }}
+          PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
+          PINATA_SECRET_KEY: ${{ secrets.PINATA_SECRET_KEY }}
+          WEB3_STORAGE_TOKEN: ${{ secrets.WEB3_STORAGE_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          # Add environment variables for contract deployment
+          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      
+      - name: Upload deployment logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-logs
+          path: logs/
+          retention-days: 7
+      
+      - name: Create deployment summary
+        if: success()
+        run: |
+          echo "## Deployment Summary" > $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "contract-addresses.json" ]; then
+            NETWORK=$(jq -r '.network' contract-addresses.json)
+            REVIEW_CONTRACT=$(jq -r '.reviewContract' contract-addresses.json)
+            PROFILE_CONTRACT=$(jq -r '.profileContract' contract-addresses.json)
+            
+            echo "### Contract Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "- **Network**: ${NETWORK}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Review Contract**: \`${REVIEW_CONTRACT}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Profile Contract**: \`${PROFILE_CONTRACT}\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "ipfs-hash.json" ]; then
+            IPFS_HASH=$(jq -r '.ipfsHash' ipfs-hash.json)
+            TIMESTAMP=$(jq -r '.timestamp' ipfs-hash.json)
+            
+            echo "### IPFS Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "- **IPFS Hash**: \`${IPFS_HASH}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Gateway URL**: https://ipfs.io/ipfs/${IPFS_HASH}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Timestamp**: ${TIMESTAMP}" >> $GITHUB_STEP_SUMMARY
+          fi
