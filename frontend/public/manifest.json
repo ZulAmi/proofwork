@@ -1,0 +1,26 @@
+{
+    "name": "ProofWork - Blockchain-Verified Freelance Platform",
+    "short_name": "ProofWork",
+    "description": "Find top freelancers with verified blockchain-secured reviews and transparent reputation scores.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f9fafb",
+    "theme_color": "#4f46e5",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "64x64 32x32 24x24 16x16",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "/icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}

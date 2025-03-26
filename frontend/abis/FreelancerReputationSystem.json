@@ -1,0 +1,105 @@
+{
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "freelancer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "rating",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "string",
+                    "name": "comment",
+                    "type": "string"
+                }
+            ],
+            "name": "leaveReview",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "freelancer",
+                    "type": "address"
+                }
+            ],
+            "name": "getFreelancerReviews",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "internalType": "address",
+                            "name": "client",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "rating",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "string",
+                            "name": "comment",
+                            "type": "string"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        }
+                    ],
+                    "internalType": "struct FreelancerReputationSystem.Review[]",
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "client",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "freelancer",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint8",
+                    "name": "rating",
+                    "type": "uint8"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "comment",
+                    "type": "string"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ReviewSubmitted",
+            "type": "event"
+        }
+    ]
+}
