@@ -22,20 +22,12 @@ const DEFAULT_SEPOLIA_RPC_URL = "https://sepolia.infura.io/v3/your-key";
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: {
-        version: "0.8.20",
+        version: "0.8.19",
         settings: {
             optimizer: {
                 enabled: true,
-                runs: 200,
-                details: {
-                    yul: true,
-                    yulDetails: {
-                        stackAllocation: true,
-                        optimizerSteps: "dhfoDgvulfnTUtnIf"
-                    }
-                }
-            },
-            viaIR: true
+                runs: 200
+            }
         }
     },
 
@@ -128,6 +120,16 @@ module.exports = {
                     apiKey: POLYGONSCAN_API_KEY
                 }
             }
+        },
+
+        // Additional networks
+        optimism: {
+            url: process.env.OPTIMISM_RPC_URL || "",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
+        },
+        polygon: {
+            url: process.env.POLYGON_RPC_URL || "",
+            accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
         }
     },
 
