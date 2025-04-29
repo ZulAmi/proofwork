@@ -14,7 +14,7 @@ async function main() {
         console.log(`Deploying with account: ${deployer.address}`);
 
         // Check balance
-        const balanceBefore = await hre.ethers.provider.getBalance(deployer.address);
+        const balanceBefore = await deployer.getBalance();
         console.log(`Deployer balance: ${hre.ethers.formatEther(balanceBefore)} ETH`);
 
         // Get the contract factory
@@ -27,15 +27,12 @@ async function main() {
         // Deploy the contract with gas optimizations
         console.log("Deploying contract...");
         const freelancerReputation = await FreelancerReputationSystem.deploy(gasSettings);
-
-        // Wait for deployment to complete
-        await freelancerReputation.waitForDeployment();
         const contractAddress = await freelancerReputation.getAddress();
 
         console.log(`✅ Contract deployed successfully to: ${contractAddress}`);
 
         // Calculate gas used
-        const balanceAfter = await hre.ethers.provider.getBalance(deployer.address);
+        const balanceAfter = await deployer.getBalance();
         const gasCost = balanceBefore - balanceAfter;
         console.log(`Gas used: ${hre.ethers.formatEther(gasCost)} ETH`);
 
@@ -62,21 +59,11 @@ async function getOptimizedGasSettings() {
     try {
         const feeData = await hre.ethers.provider.getFeeData();
 
-        // For L2 networks like Optimism/Polygon, use EIP-1559 if available
-        if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-            return {
-                maxFeePerGas: feeData.maxFeePerGas,
-                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
-            };
-        }
-
-        // Fallback for networks that don't support EIP-1559
         return {
             gasPrice: feeData.gasPrice
         };
     } catch (error) {
         console.warn("Error getting optimized gas settings:", error.message);
-        // Return empty object to use network defaults
         return {};
     }
 }
