@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
+
+import "./ProofToken.sol";
 
 /**
  * @title FreelancerReputationSystem
@@ -29,7 +31,24 @@ contract FreelancerReputationSystem {
         uint256 timestamp; // When the review was created
     }
 
-    mapping(address => Freelancer) public freelancers;
+    struct FreelancerProfile {
+        string ipfsHash;
+        uint256 reputation;
+        uint256 reviewCount;
+        address wallet;
+        bool isVerified;
+        uint256 stakedTokens; // Amount of staked PROOF tokens
+    }
+
+    mapping(address => FreelancerProfile) public freelancers;
+
+    ProofToken public proofToken;
+
+    event ProfileCreated(address indexed freelancer, string ipfsHash);
+    event ProfileUpdated(address indexed freelancer, string ipfsHash);
+    event TokensStaked(address indexed freelancer, uint256 amount);
+    event TokensUnstaked(address indexed freelancer, uint256 amount);
+
     mapping(address => Client) public clients;
     mapping(address => mapping(address => Review)) public reviews; // freelancer => client => review
 
@@ -59,14 +78,15 @@ contract FreelancerReputationSystem {
 
     modifier onlyRegisteredFreelancer() {
         require(
-            freelancers[msg.sender].isRegistered,
+            freelancers[msg.sender].wallet != address(0),
             "Freelancer not registered"
         );
         _;
     }
 
-    constructor() {
+    constructor(address _proofTokenAddress) {
         owner = msg.sender;
+        proofToken = ProofToken(_proofTokenAddress);
     }
 
     // ========== REGISTRATION FUNCTIONS ==========
@@ -75,7 +95,10 @@ contract FreelancerReputationSystem {
      * @dev Register a new freelancer
      */
     function registerAsFreelancer() external {
-        require(!freelancers[msg.sender].isRegistered, "Already registered");
+        require(
+            freelancers[msg.sender].wallet == address(0),
+            "Already registered"
+        );
 
         freelancers[msg.sender].isRegistered = true;
         freelancers[msg.sender].totalRating = 0;
@@ -173,5 +196,58 @@ contract FreelancerReputationSystem {
         address freelancer
     ) external view returns (bool) {
         return freelancers[freelancer].clientHasReviewed[client];
+    }
+
+    function setProfile(string calldata _ipfsHash) external {
+        FreelancerProfile storage profile = freelancers[msg.sender];
+
+        if (profile.wallet == address(0)) {
+            profile.wallet = msg.sender;
+            profile.reputation = 0;
+            profile.reviewCount = 0;
+            profile.isVerified = false;
+            profile.stakedTokens = 0;
+            emit ProfileCreated(msg.sender, _ipfsHash);
+        } else {
+            emit ProfileUpdated(msg.sender, _ipfsHash);
+        }
+
+        profile.ipfsHash = _ipfsHash;
+    }
+
+    function stakeTokens(uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than zero");
+        require(
+            freelancers[msg.sender].wallet != address(0),
+            "Profile does not exist"
+        );
+
+        // Transfer PROOF tokens from the freelancer to the contract
+        proofToken.transferFrom(msg.sender, address(this), _amount);
+
+        // Update staked tokens
+        freelancers[msg.sender].stakedTokens += _amount;
+
+        emit TokensStaked(msg.sender, _amount);
+    }
+
+    function unstakeTokens(uint256 _amount) external {
+        require(_amount > 0, "Amount must be greater than zero");
+        FreelancerProfile storage profile = freelancers[msg.sender];
+        require(profile.stakedTokens >= _amount, "Insufficient staked tokens");
+
+        // Update staked tokens
+        profile.stakedTokens -= _amount;
+
+        // Transfer PROOF tokens back to the freelancer
+        proofToken.transfer(msg.sender, _amount);
+
+        emit TokensUnstaked(msg.sender, _amount);
+    }
+
+    function getStakedTokens(
+        address _freelancer
+    ) external view returns (uint256) {
+        return freelancers[_freelancer].stakedTokens;
     }
 }

@@ -5,51 +5,32 @@ require("dotenv").config();
  * Deploys the FreelancerReputationSystem contract to Optimism/Polygon
  */
 async function main() {
-    try {
-        console.log("Starting deployment of FreelancerReputationSystem contract...");
-        console.log("Network:", hre.network.name);
+    console.log("Starting deployment...");
 
-        // Get the deployer account
-        const [deployer] = await hre.ethers.getSigners();
-        console.log(`Deploying with account: ${deployer.address}`);
+    const [deployer] = await hre.ethers.getSigners();
+    console.log(`Deploying with account: ${deployer.address}`);
+    const balanceBefore = await deployer.getBalance();
+    console.log(`Deployer balance: ${hre.ethers.formatEther(balanceBefore)} ETH`);
 
-        // Check balance
-        const balanceBefore = await deployer.getBalance();
-        console.log(`Deployer balance: ${hre.ethers.formatEther(balanceBefore)} ETH`);
+    // Deploy ProofToken
+    console.log("Deploying ProofToken...");
+    const ProofToken = await hre.ethers.getContractFactory("ProofToken");
+    const proofToken = await ProofToken.deploy();
+    await proofToken.deployed();
+    console.log(`ProofToken deployed to: ${proofToken.address}`);
 
-        // Get the contract factory
-        const FreelancerReputationSystem = await hre.ethers.getContractFactory("FreelancerReputationSystem");
+    // Deploy FreelancerReputationSystem
+    console.log("Deploying FreelancerReputationSystem...");
+    const FreelancerReputationSystem = await hre.ethers.getContractFactory("FreelancerReputationSystem");
+    const freelancerReputation = await FreelancerReputationSystem.deploy(proofToken.address);
+    await freelancerReputation.deployed();
+    console.log(`FreelancerReputationSystem deployed to: ${freelancerReputation.address}`);
 
-        // Get optimized gas settings
-        const gasSettings = await getOptimizedGasSettings();
-        console.log("Using gas settings:", JSON.stringify(gasSettings, null, 2));
+    const balanceAfter = await deployer.getBalance();
+    const gasCost = balanceBefore.sub(balanceAfter);
+    console.log(`Gas used: ${hre.ethers.formatEther(gasCost)} ETH`);
 
-        // Deploy the contract with gas optimizations
-        console.log("Deploying contract...");
-        const freelancerReputation = await FreelancerReputationSystem.deploy(gasSettings);
-        const contractAddress = await freelancerReputation.getAddress();
-
-        console.log(`✅ Contract deployed successfully to: ${contractAddress}`);
-
-        // Calculate gas used
-        const balanceAfter = await deployer.getBalance();
-        const gasCost = balanceBefore - balanceAfter;
-        console.log(`Gas used: ${hre.ethers.formatEther(gasCost)} ETH`);
-
-        // Verify contract if not on local network
-        await verifyContract(contractAddress);
-
-        return { success: true, contractAddress };
-    } catch (error) {
-        console.error("❌ Deployment failed:", error.message);
-        if (error.code) {
-            console.error(`Error code: ${error.code}`);
-        }
-        if (error.transaction) {
-            console.error(`Transaction hash: ${error.transaction.hash}`);
-        }
-        return { success: false, error };
-    }
+    console.log("Deployment complete!");
 }
 
 /**
@@ -96,7 +77,7 @@ async function verifyContract(contractAddress) {
 
 // Execute deployment
 main()
-    .then((result) => process.exit(result.success ? 0 : 1))
+    .then(() => process.exit(0))
     .catch((error) => {
         console.error(error);
         process.exit(1);
