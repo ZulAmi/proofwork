@@ -22,7 +22,10 @@ async function main() {
     // Deploy FreelancerReputationSystem
     console.log("Deploying FreelancerReputationSystem...");
     const FreelancerReputationSystem = await hre.ethers.getContractFactory("FreelancerReputationSystem");
-    const freelancerReputation = await FreelancerReputationSystem.deploy(proofToken.address);
+
+    // Replace with the Chainlink Price Feed address for your network
+    const priceFeedAddress = "0xYourChainlinkPriceFeedAddress"; // Example: ETH/USD price feed address
+    const freelancerReputation = await FreelancerReputationSystem.deploy(proofToken.address, priceFeedAddress);
     await freelancerReputation.deployed();
     console.log(`FreelancerReputationSystem deployed to: ${freelancerReputation.address}`);
 
@@ -31,48 +34,6 @@ async function main() {
     console.log(`Gas used: ${hre.ethers.formatEther(gasCost)} ETH`);
 
     console.log("Deployment complete!");
-}
-
-/**
- * Gets optimized gas settings based on the current network
- */
-async function getOptimizedGasSettings() {
-    try {
-        const feeData = await hre.ethers.provider.getFeeData();
-
-        return {
-            gasPrice: feeData.gasPrice
-        };
-    } catch (error) {
-        console.warn("Error getting optimized gas settings:", error.message);
-        return {};
-    }
-}
-
-/**
- * Attempts to verify contract on supported explorers
- */
-async function verifyContract(contractAddress) {
-    // Skip verification on local networks
-    if (['localhost', 'hardhat'].includes(hre.network.name)) {
-        console.log('Skipping verification on local network');
-        return;
-    }
-
-    console.log('Waiting for block confirmations before verification...');
-    // Wait for transaction confirmations
-    await new Promise(resolve => setTimeout(resolve, 30000));
-
-    console.log('Attempting contract verification...');
-    try {
-        await hre.run("verify:verify", {
-            address: contractAddress,
-            constructorArguments: []
-        });
-        console.log("✅ Contract verified successfully");
-    } catch (error) {
-        console.warn("⚠️ Verification failed:", error.message);
-    }
 }
 
 // Execute deployment

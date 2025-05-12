@@ -2,16 +2,19 @@
 pragma solidity ^0.8.19;
 
 import "./ProofToken.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title FreelancerReputationSystem
- * @dev Contract for managing freelancer registrations and client reviews
+ * @dev Contract for managing freelancer registrations, staking, and client reviews
  * @custom:security-contact security@example.com
  */
 contract FreelancerReputationSystem {
     // ========== STATE VARIABLES ==========
 
     address public owner;
+    ProofToken public proofToken;
+    AggregatorV3Interface internal priceFeed;
 
     struct Freelancer {
         bool isRegistered;
@@ -41,8 +44,6 @@ contract FreelancerReputationSystem {
     }
 
     mapping(address => FreelancerProfile) public freelancers;
-
-    ProofToken public proofToken;
 
     event ProfileCreated(address indexed freelancer, string ipfsHash);
     event ProfileUpdated(address indexed freelancer, string ipfsHash);
@@ -84,9 +85,10 @@ contract FreelancerReputationSystem {
         _;
     }
 
-    constructor(address _proofTokenAddress) {
+    constructor(address _proofTokenAddress, address _priceFeedAddress) {
         owner = msg.sender;
         proofToken = ProofToken(_proofTokenAddress);
+        priceFeed = AggregatorV3Interface(_priceFeedAddress);
     }
 
     // ========== REGISTRATION FUNCTIONS ==========
@@ -215,23 +217,46 @@ contract FreelancerReputationSystem {
         profile.ipfsHash = _ipfsHash;
     }
 
-    function stakeTokens(uint256 _amount) external {
-        require(_amount > 0, "Amount must be greater than zero");
-        require(
-            freelancers[msg.sender].wallet != address(0),
-            "Profile does not exist"
-        );
+    // ========== PRICE FEED FUNCTIONS ==========
 
-        // Transfer PROOF tokens from the freelancer to the contract
-        proofToken.transferFrom(msg.sender, address(this), _amount);
-
-        // Update staked tokens
-        freelancers[msg.sender].stakedTokens += _amount;
-
-        emit TokensStaked(msg.sender, _amount);
+    /**
+     * @dev Get the latest price of the PROOF token in USD
+     * @return price The price of 1 PROOF token in USD (8 decimals)
+     */
+    function getProofTokenPrice() public view returns (uint256) {
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        require(price > 0, "Invalid price");
+        return uint256(price);
     }
 
-    function unstakeTokens(uint256 _amount) external {
+    // ========== STAKING FUNCTIONS ==========
+
+    /**
+     * @dev Stake tokens in USD-equivalent amounts
+     * @param usdAmount The amount in USD to stake
+     */
+    function stakeTokensInUSD(
+        uint256 usdAmount
+    ) external onlyRegisteredFreelancer {
+        require(usdAmount > 0, "Amount must be greater than zero");
+
+        uint256 proofTokenPrice = getProofTokenPrice(); // Get the current price of PROOF in USD
+        uint256 tokenAmount = (usdAmount * 1e18) / proofTokenPrice; // Convert USD to token amount
+
+        // Transfer PROOF tokens from the freelancer to the contract
+        proofToken.transferFrom(msg.sender, address(this), tokenAmount);
+
+        // Update staked tokens
+        freelancers[msg.sender].stakedTokens += tokenAmount;
+
+        emit TokensStaked(msg.sender, tokenAmount);
+    }
+
+    /**
+     * @dev Unstake tokens
+     * @param _amount The amount of tokens to unstake
+     */
+    function unstakeTokens(uint256 _amount) external onlyRegisteredFreelancer {
         require(_amount > 0, "Amount must be greater than zero");
         FreelancerProfile storage profile = freelancers[msg.sender];
         require(profile.stakedTokens >= _amount, "Insufficient staked tokens");
