@@ -55,7 +55,11 @@ contract FreelancerReputationSystem {
 
     // ========== EVENTS ==========
 
-    event FreelancerRegistered(address indexed freelancer, uint256 timestamp);
+    event FreelancerRegistered(
+        address indexed freelancer,
+        string ipfsHash,
+        uint256 timestamp
+    );
     event ClientRegistered(address indexed client, uint256 timestamp);
     event ReviewSubmitted(
         address indexed client,
@@ -79,7 +83,7 @@ contract FreelancerReputationSystem {
 
     modifier onlyRegisteredFreelancer() {
         require(
-            freelancers[msg.sender].wallet != address(0),
+            freelancers[msg.sender].isRegistered,
             "Freelancer not registered"
         );
         _;
@@ -95,18 +99,21 @@ contract FreelancerReputationSystem {
 
     /**
      * @dev Register a new freelancer
+     * @param _ipfsHash The IPFS hash pointing to the freelancer's profile data
      */
-    function registerAsFreelancer() external {
-        require(
-            freelancers[msg.sender].wallet == address(0),
-            "Already registered"
-        );
+    function registerAsFreelancer(string calldata _ipfsHash) external {
+        require(!freelancers[msg.sender].isRegistered, "Already registered");
 
-        freelancers[msg.sender].isRegistered = true;
-        freelancers[msg.sender].totalRating = 0;
-        freelancers[msg.sender].reviewCount = 0;
+        freelancers[msg.sender] = FreelancerProfile({
+            ipfsHash: _ipfsHash,
+            reputation: 0,
+            reviewCount: 0,
+            wallet: msg.sender,
+            isVerified: false,
+            stakedTokens: 0
+        });
 
-        emit FreelancerRegistered(msg.sender, block.timestamp);
+        emit FreelancerRegistered(msg.sender, _ipfsHash, block.timestamp);
     }
 
     /**
@@ -215,6 +222,29 @@ contract FreelancerReputationSystem {
         }
 
         profile.ipfsHash = _ipfsHash;
+    }
+
+    /**
+     * @dev Update the freelancer's profile
+     * @param _ipfsHash The new IPFS hash pointing to the updated profile data
+     */
+    function updateProfile(
+        string calldata _ipfsHash
+    ) external onlyRegisteredFreelancer {
+        freelancers[msg.sender].ipfsHash = _ipfsHash;
+
+        emit ProfileUpdated(msg.sender, _ipfsHash, block.timestamp);
+    }
+
+    /**
+     * @dev Get the freelancer's profile
+     * @param _freelancer The address of the freelancer
+     * @return The freelancer's profile
+     */
+    function getProfile(
+        address _freelancer
+    ) external view returns (FreelancerProfile memory) {
+        return freelancers[_freelancer];
     }
 
     // ========== PRICE FEED FUNCTIONS ==========
