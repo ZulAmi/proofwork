@@ -59,6 +59,10 @@ export default function Navbar({ onConnectWalletClick }) {
                                 <span>How It Works</span>
                                 <span className="absolute bottom-0 left-0 h-0.5 w-full transform scale-x-0 bg-indigo-600 transition-transform group-hover:scale-x-100"></span>
                             </Link>
+                            <Link href="/job-marketplace" className="group inline-flex items-center px-2 py-1 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white relative">
+                                <span>Job Marketplace</span>
+                                <span className="absolute bottom-0 left-0 h-0.5 w-full transform scale-x-0 bg-indigo-600 transition-transform group-hover:scale-x-100"></span>
+                            </Link>
                         </div>
 
                         <div className="flex items-center space-x-3">
