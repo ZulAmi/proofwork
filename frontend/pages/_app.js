@@ -8,6 +8,8 @@ import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/react';
 import NProgress from 'nprogress';
 import '../styles/globals.css';
+import { NotificationProvider } from "../context/NotificationContext";
+import NotificationBanner from "../components/NotificationBanner";
 
 // Loading bar configuration
 NProgress.configure({
@@ -64,7 +66,10 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                 <SessionProvider session={session}>
                     <Web3Provider>
                         <QueryClientProvider client={queryClient}>
-                            {getLayout(<Component {...pageProps} />)}
+                            <NotificationProvider>
+                                <NotificationBanner />
+                                {getLayout(<Component {...pageProps} />)}
+                            </NotificationProvider>
                             <Analytics />
                         </QueryClientProvider>
                     </Web3Provider>
