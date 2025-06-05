@@ -1,4 +1,4 @@
-import { useNotification } from "../context/NotificationContext";
+import { useNotification } from "../context/NotificationsContext";
 
 export default function NotificationBanner() {
     const { notification } = useNotification();

@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/react';
 import NProgress from 'nprogress';
 import '../styles/globals.css';
-import { NotificationProvider } from "../context/NotificationContext";
+import { NotificationProvider } from "../context/NotificationsContext";
 import NotificationBanner from "../components/NotificationBanner";
 
 // Loading bar configuration

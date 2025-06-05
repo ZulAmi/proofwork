@@ -1,27 +1,22 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
-const MessageContext = createContext();
+const NotificationContext = createContext();
 
-export function MessageProvider({ children }) {
-    const [conversations, setConversations] = useState({}); // {address: [{from, to, message, timestamp}]}
+export function NotificationProvider({ children }) {
+    const [notification, setNotification] = useState(null);
 
-    const sendMessage = (to, message, from) => {
-        setConversations((prev) => {
-            const conv = prev[to] || [];
-            return {
-                ...prev,
-                [to]: [...conv, { from, to, message, timestamp: Date.now() }],
-            };
-        });
-    };
+    const showNotification = useCallback((type, message) => {
+        setNotification({ type, message });
+        setTimeout(() => setNotification(null), 4000); // Auto-hide after 4 seconds
+    }, []);
 
     return (
-        <MessageContext.Provider value={{ conversations, sendMessage }}>
+        <NotificationContext.Provider value={{ notification, showNotification }}>
             {children}
-        </MessageContext.Provider>
+        </NotificationContext.Provider>
     );
 }
 
-export function useMessages() {
-    return useContext(MessageContext);
+export function useNotification() {
+    return useContext(NotificationContext);
 }
