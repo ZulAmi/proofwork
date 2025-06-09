@@ -10,6 +10,8 @@ import NProgress from 'nprogress';
 import '../styles/globals.css';
 import { NotificationProvider } from "../context/NotificationsContext";
 import NotificationBanner from "../components/NotificationBanner";
+import React from 'react';
+import ConnectWalletModal from '../components/ConnectWalletModal';
 
 // Loading bar configuration
 NProgress.configure({
@@ -50,6 +52,16 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     // Check if the component has a layout
     const getLayout = Component.getLayout || ((page) => page);
 
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+    const handleConnectWallet = () => {
+        setIsWalletModalOpen(true);
+    };
+
+    const closeWalletModal = () => {
+        setIsWalletModalOpen(false);
+    };
+
     return (
         <>
             <Head>
@@ -68,7 +80,12 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                         <QueryClientProvider client={queryClient}>
                             <NotificationProvider>
                                 <NotificationBanner />
-                                {getLayout(<Component {...pageProps} />)}
+                                {getLayout(<Component {...pageProps} onConnectWalletClick={handleConnectWallet} />)}
+                                <ConnectWalletModal
+                                    isOpen={isWalletModalOpen}
+                                    onClose={closeWalletModal}
+                                    onConnect={() => console.log('Wallet connected')}
+                                />
                             </NotificationProvider>
                             <Analytics />
                         </QueryClientProvider>

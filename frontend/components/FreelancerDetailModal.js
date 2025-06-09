@@ -4,7 +4,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
 import { useWeb3 } from '../web3Provider';
 
-const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => {
+const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onConnectWallet }) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [reviewText, setReviewText] = useState('');
     const [rating, setRating] = useState(5);
@@ -14,7 +14,7 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         if (!isConnected) {
-            alert('Please connect your wallet to leave a review');
+            onConnectWallet(); // Trigger wallet connection
             return;
         }
 
@@ -54,6 +54,14 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
             alert('Failed to submit review');
             setIsSubmitting(false);
         }
+    };
+
+    const handleLeaveReview = () => {
+        if (!isConnected) {
+            onConnectWallet();
+            return;
+        }
+        // Leave review logic
     };
 
     return (
@@ -138,8 +146,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                                 <svg
                                                     key={i}
                                                     className={`h-5 w-5 ${i < Math.round(freelancer.trustScore / 20)
-                                                            ? 'text-yellow-400'
-                                                            : 'text-gray-300 dark:text-gray-600'
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300 dark:text-gray-600'
                                                         }`}
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
@@ -167,8 +175,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                 <nav className="-mb-px flex space-x-8">
                                     <button
                                         className={`${activeTab === 'profile'
-                                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                                             } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm`}
                                         onClick={() => setActiveTab('profile')}
                                     >
@@ -176,8 +184,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                     </button>
                                     <button
                                         className={`${activeTab === 'reviews'
-                                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                                             } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm`}
                                         onClick={() => setActiveTab('reviews')}
                                     >
@@ -185,8 +193,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                     </button>
                                     <button
                                         className={`${activeTab === 'leave-review'
-                                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                            ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                                             } whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm`}
                                         onClick={() => setActiveTab('leave-review')}
                                     >
@@ -254,8 +262,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                                                     <svg
                                                                         key={i}
                                                                         className={`h-5 w-5 ${i < review.rating
-                                                                                ? 'text-yellow-400'
-                                                                                : 'text-gray-300 dark:text-gray-600'
+                                                                            ? 'text-yellow-400'
+                                                                            : 'text-gray-300 dark:text-gray-600'
                                                                             }`}
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         viewBox="0 0 20 20"
@@ -321,8 +329,8 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected }) => 
                                                             >
                                                                 <svg
                                                                     className={`h-8 w-8 ${star <= rating
-                                                                            ? 'text-yellow-400'
-                                                                            : 'text-gray-300 dark:text-gray-600'
+                                                                        ? 'text-yellow-400'
+                                                                        : 'text-gray-300 dark:text-gray-600'
                                                                         }`}
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     viewBox="0 0 20 20"
