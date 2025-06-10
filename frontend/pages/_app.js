@@ -19,6 +19,49 @@ NProgress.configure({
     trickleSpeed: 100
 });
 
+// Create a separate component that uses useWeb3
+function AppContent({ Component, pageProps }) {
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+    const handleConnectWallet = () => {
+        setIsWalletModalOpen(true);
+    };
+
+    const closeWalletModal = () => {
+        setIsWalletModalOpen(false);
+    };
+
+    const handleWalletConnect = async (walletType) => {
+        try {
+            // For now, just log the wallet type
+            // The actual connection logic should be handled in the Web3Provider
+            console.log(`Attempting to connect with ${walletType}`);
+
+            // You can implement the actual wallet connection logic here
+            // or call a function from your Web3Provider context
+
+        } catch (error) {
+            console.error('Failed to connect wallet:', error);
+            throw error;
+        }
+    };
+
+    // Check if the component has a layout
+    const getLayout = Component.getLayout || ((page) => page);
+
+    return (
+        <>
+            <NotificationBanner />
+            {getLayout(<Component {...pageProps} onConnectWalletClick={handleConnectWallet} />)}
+            <ConnectWalletModal
+                isOpen={isWalletModalOpen}
+                onClose={closeWalletModal}
+                onConnect={handleWalletConnect}
+            />
+        </>
+    );
+}
+
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     // Create a client for each request instead of sharing one
     const [queryClient] = useState(() => new QueryClient({
@@ -49,19 +92,6 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         };
     }, [router]);
 
-    // Check if the component has a layout
-    const getLayout = Component.getLayout || ((page) => page);
-
-    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-
-    const handleConnectWallet = () => {
-        setIsWalletModalOpen(true);
-    };
-
-    const closeWalletModal = () => {
-        setIsWalletModalOpen(false);
-    };
-
     return (
         <>
             <Head>
@@ -79,15 +109,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
                     <Web3Provider>
                         <QueryClientProvider client={queryClient}>
                             <NotificationProvider>
-                                <NotificationBanner />
-                                {getLayout(<Component {...pageProps} onConnectWalletClick={handleConnectWallet} />)}
-                                <ConnectWalletModal
-                                    isOpen={isWalletModalOpen}
-                                    onClose={closeWalletModal}
-                                    onConnect={() => console.log('Wallet connected')}
-                                />
+                                <AppContent Component={Component} pageProps={pageProps} />
+                                <Analytics />
                             </NotificationProvider>
-                            <Analytics />
                         </QueryClientProvider>
                     </Web3Provider>
                 </SessionProvider>

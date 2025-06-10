@@ -52,7 +52,7 @@ export default function Footer() {
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white tracking-wider uppercase">Platform</h3>
                                 <ul className="mt-4 space-y-4">
                                     <li>
-                                        <Link href="/" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                                        <Link href="/freelancers" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                                             Freelancers
                                         </Link>
                                     </li>
@@ -62,13 +62,8 @@ export default function Footer() {
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link href="/how-it-works" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                            How It Works
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/pricing" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                            Pricing
+                                        <Link href="/marketplace" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                                            Marketplace
                                         </Link>
                                     </li>
                                 </ul>
@@ -79,11 +74,6 @@ export default function Footer() {
                                     <li>
                                         <Link href="/faq" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                                             FAQ
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/documentation" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                            Documentation
                                         </Link>
                                     </li>
                                     <li>
@@ -106,11 +96,6 @@ export default function Footer() {
                                     <li>
                                         <Link href="/blog" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                                             Blog
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/careers" className="text-base text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                            Careers
                                         </Link>
                                     </li>
                                 </ul>

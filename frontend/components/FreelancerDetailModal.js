@@ -1,46 +1,23 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { Dialog, Transition } from '@headlessui/react';
+import Image from 'next/image';
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon';
-import { useWeb3 } from '../web3Provider';
 
 const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onConnectWallet }) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [reviewText, setReviewText] = useState('');
     const [rating, setRating] = useState(5);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { submitReview, contract } = useWeb3();
 
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         if (!isConnected) {
-            onConnectWallet(); // Trigger wallet connection
+            onConnectWallet(); // This should trigger the centralized modal
             return;
         }
 
         setIsSubmitting(true);
         try {
-            // In a real app, you would call the contract method here
-            console.log(`Submitting review for ${freelancer.address}: ${rating} stars - ${reviewText}`);
-
-            // Example contract call (commented out)
-            /*
-            await submitReview({
-              freelancerAddress: freelancer.address,
-              rating: rating,
-              comment: reviewText,
-              onSuccess: () => {
-                setReviewText('');
-                setRating(5);
-                alert('Review submitted successfully!');
-              },
-              onError: (error) => {
-                console.error('Review submission failed:', error);
-                alert(`Failed to submit review: ${error.message}`);
-              }
-            });
-            */
-
             // Mock success
             setTimeout(() => {
                 setReviewText('');
@@ -48,20 +25,11 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onCon
                 alert('Review submitted successfully!');
                 setIsSubmitting(false);
             }, 1000);
-
         } catch (error) {
             console.error('Review submission error:', error);
             alert('Failed to submit review');
             setIsSubmitting(false);
         }
-    };
-
-    const handleLeaveReview = () => {
-        if (!isConnected) {
-            onConnectWallet();
-            return;
-        }
-        // Leave review logic
     };
 
     return (
@@ -84,7 +52,6 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onCon
                         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
                     </Transition.Child>
 
-                    {/* This element is to trick the browser into centering the modal contents. */}
                     <span
                         className="inline-block h-screen align-middle"
                         aria-hidden="true"
@@ -102,6 +69,7 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onCon
                         leaveTo="opacity-0 scale-95"
                     >
                         <div className="inline-block w-full max-w-3xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
+                            {/* Close Button */}
                             <div className="absolute top-0 right-0 pt-4 pr-4">
                                 <button
                                     type="button"
@@ -308,7 +276,7 @@ const FreelancerDetailModal = ({ freelancer, isOpen, onClose, isConnected, onCon
                                                 <button
                                                     type="button"
                                                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                    onClick={() => onClose()}
+                                                    onClick={onConnectWallet} // This should trigger the centralized modal
                                                 >
                                                     Connect Wallet
                                                 </button>

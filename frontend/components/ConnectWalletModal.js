@@ -4,13 +4,18 @@ import { Dialog, Transition } from '@headlessui/react';
 const ConnectWalletModal = ({ isOpen, onClose, onConnect }) => {
     const handleConnect = async (walletType) => {
         try {
-            // Trigger wallet connection logic
-            await onConnect(walletType);
-
+            console.log(`Attempting to connect with ${walletType}`);
+            
+            // Call the onConnect function passed from parent
+            if (onConnect) {
+                await onConnect(walletType);
+            }
+            
             // Close the modal after successful connection
             onClose();
         } catch (error) {
             console.error(`Error connecting with ${walletType}:`, error);
+            // Keep modal open on error so user can try again
         }
     };
 
