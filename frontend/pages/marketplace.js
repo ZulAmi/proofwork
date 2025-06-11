@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
@@ -27,6 +27,13 @@ export default function Marketplace({ onConnectWalletClick }) {
         },
     ];
 
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredItems = items.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
             <Navbar onConnectWalletClick={onConnectWalletClick} />
@@ -39,17 +46,29 @@ export default function Marketplace({ onConnectWalletClick }) {
                         Explore services and products offered by verified freelancers.
                     </p>
 
+                    {/* Search Bar */}
+                    <div className="mt-6">
+                        <input
+                            type="text"
+                            placeholder="Search marketplace by name or description..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:text-white"
+                        />
+                    </div>
+
+                    {/* Marketplace Items */}
                     <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {items.map((item) => (
+                        {filteredItems.map((item) => (
                             <div
                                 key={item.id}
                                 className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden"
                             >
-                                <div className="relative w-full h-48">
+                                <div className="relative w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                                     <img
                                         src={item.image}
                                         alt={item.name}
-                                        className="object-cover w-full h-full"
+                                        className="object-contain w-full h-full"
                                     />
                                 </div>
                                 <div className="p-4">
@@ -66,6 +85,15 @@ export default function Marketplace({ onConnectWalletClick }) {
                             </div>
                         ))}
                     </div>
+
+                    {/* No Results Message */}
+                    {filteredItems.length === 0 && (
+                        <div className="mt-8 text-center">
+                            <p className="text-gray-600 dark:text-gray-300">
+                                No marketplace items found matching your search criteria.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </main>
             <Footer />
