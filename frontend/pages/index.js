@@ -188,6 +188,34 @@ export default function Home() {
         return Array.from(skillSet).sort();
     }, [freelancers]);
 
+    // Placeholder top-rated clients
+    const topClients = [
+        {
+            id: 1,
+            name: 'TechCorp Solutions',
+            logo: '/images/techcorp-logo.jpg',
+            industry: 'Software Development',
+            trustScore: 92,
+            reviewCount: 15,
+        },
+        {
+            id: 2,
+            name: 'Designify Studio',
+            logo: '/images/designify-logo.jpg',
+            industry: 'Graphic Design',
+            trustScore: 88,
+            reviewCount: 20,
+        },
+        {
+            id: 3,
+            name: 'Blockchain Innovators',
+            logo: '/images/blockchain-logo.jpg',
+            industry: 'Blockchain Technology',
+            trustScore: 95,
+            reviewCount: 25,
+        },
+    ];
+
     return (
         <>
             <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -247,6 +275,7 @@ export default function Home() {
 
                     {/* Main Content */}
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        {/* Top-Rated Freelancers Section */}
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Top-Rated Freelancers</h2>
@@ -456,6 +485,69 @@ export default function Home() {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Top-Rated Clients Section */}
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Top-Rated Clients</h2>
+                                <p className="text-md text-gray-600 dark:text-gray-400 mt-2">
+                                    Discover trusted companies working with verified freelancers
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            {topClients.map((client) => (
+                                <div
+                                    key={client.id}
+                                    className="relative group bg-white dark:bg-gray-800 overflow-hidden shadow-md hover:shadow-xl rounded-lg transition-all duration-300 transform hover:-translate-y-1"
+                                >
+                                    <div className="px-6 py-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 relative">
+                                                <img
+                                                    src={client.logo}
+                                                    alt={client.name}
+                                                    width={70}
+                                                    height={70}
+                                                    className="rounded-full border-2 border-white dark:border-gray-700 shadow-sm object-cover"
+                                                />
+                                            </div>
+                                            <div className="ml-5 flex-1">
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                    {client.name}
+                                                </h3>
+                                                <div className="mt-1 flex items-center">
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                                        {client.industry}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+                                        <div className="mt-4 flex items-center">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider">
+                                                Trust Score
+                                            </span>
+                                            <div className="ml-2 h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-indigo-600 rounded-full"
+                                                    style={{ width: `${client.trustScore}%` }}
+                                                ></div>
+                                            </div>
+                                            <div className="ml-4 text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                                                {client.trustScore}
+                                            </div>
+                                            <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">/100</span>
+                                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                                                ({client.reviewCount} reviews)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
