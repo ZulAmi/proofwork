@@ -1,19 +1,28 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { loadFixture, time } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("FreelancerReputationSystem", function () {
     // Define test fixture to reuse the same setup in multiple tests
     async function deployContractFixture() {
-        // Get signers for testing
         const [owner, freelancer1, freelancer2, client1, client2, client3, unauthorized] = await ethers.getSigners();
 
-        // Deploy the contract
+        // Deploy ProofToken
+        const ProofToken = await ethers.getContractFactory("ProofToken");
+        const proofToken = await ProofToken.deploy();
+
+        // Deploy MockV3Aggregator (8 decimals, price = 1e8)
+        const MockV3Aggregator = await ethers.getContractFactory("MockV3Aggregator");
+        const priceFeed = await MockV3Aggregator.deploy(8, "100000000");
+
+        // Deploy FreelancerReputationSystem with mocks
         const FreelancerReputationSystem = await ethers.getContractFactory("FreelancerReputationSystem");
-        const freelancerReputation = await FreelancerReputationSystem.deploy();
+        const freelancerReputation = await FreelancerReputationSystem.deploy(proofToken.address, priceFeed.address);
 
         return {
             freelancerReputation,
+            proofToken,
+            priceFeed,
             owner,
             freelancer1,
             freelancer2,
