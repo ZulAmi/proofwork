@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../ProofToken.sol"; // Import the ProofToken contract
-// import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import "../smart-contracts/contracts/ProofToken.sol";
+import "../smart-contracts/contracts/MockV3Aggregator.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title FreelancerReputationSystem
