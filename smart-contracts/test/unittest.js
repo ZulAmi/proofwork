@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
 async function deployContractFixture() {
     const [owner, freelancer1, freelancer2, client1, client2, client3, unauthorized] = await ethers.getSigners();
@@ -45,9 +45,10 @@ describe("FreelancerReputationSystem", function () {
     describe("Registration", function () {
         it("Should allow freelancers to register", async function () {
             const { freelancerReputation, freelancer1 } = await loadFixture(deployContractFixture);
+
             await expect(freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash"))
                 .to.emit(freelancerReputation, "FreelancerRegistered")
-                .withArgs(await freelancer1.getAddress(), "ipfs://hash", await time.latest() + 1);
+                .withArgs(await freelancer1.getAddress(), "ipfs://hash", await ethers.provider.getBlock("latest").then(b => b.timestamp + 1));
 
             const profile = await freelancerReputation.freelancers(await freelancer1.getAddress());
             expect(profile.isRegistered).to.equal(true);
@@ -55,7 +56,9 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should prevent double registration for freelancers", async function () {
             const { freelancerReputation, freelancer1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
+
             await expect(
                 freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash2")
             ).to.be.revertedWith("Already registered");
@@ -63,9 +66,10 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should allow clients to register", async function () {
             const { freelancerReputation, client1 } = await loadFixture(deployContractFixture);
+
             await expect(freelancerReputation.connect(client1).registerAsClient())
                 .to.emit(freelancerReputation, "ClientRegistered")
-                .withArgs(await client1.getAddress(), await time.latest() + 1);
+                .withArgs(await client1.getAddress(), await ethers.provider.getBlock("latest").then(b => b.timestamp + 1));
 
             const client = await freelancerReputation.clients(await client1.getAddress());
             expect(client.isRegistered).to.equal(true);
@@ -73,7 +77,9 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should prevent double registration for clients", async function () {
             const { freelancerReputation, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(client1).registerAsClient();
+
             await expect(
                 freelancerReputation.connect(client1).registerAsClient()
             ).to.be.revertedWith("Already registered");
@@ -83,6 +89,7 @@ describe("FreelancerReputationSystem", function () {
     describe("Review Submission", function () {
         it("Should allow clients to submit reviews", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
 
@@ -91,7 +98,13 @@ describe("FreelancerReputationSystem", function () {
 
             await expect(freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), rating, comment))
                 .to.emit(freelancerReputation, "ReviewSubmitted")
-                .withArgs(await client1.getAddress(), await freelancer1.getAddress(), rating, comment, await time.latest() + 1);
+                .withArgs(
+                    await client1.getAddress(),
+                    await freelancer1.getAddress(),
+                    rating,
+                    comment,
+                    await ethers.provider.getBlock("latest").then(b => b.timestamp + 1)
+                );
 
             const freelancerData = await freelancerReputation.freelancers(await freelancer1.getAddress());
             expect(freelancerData.totalRating).to.equal(rating);
@@ -107,25 +120,32 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should prevent reviews from unregistered clients", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
+
             await expect(
                 freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 5, "Nice")
             ).to.be.revertedWith("Client not registered");
         });
 
         it("Should prevent reviews for unregistered freelancers", async function () {
-            const { freelancerReputation, client1 } = await loadFixture(deployContractFixture);
+            const { freelancerReputation, freelancer2, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(client1).registerAsClient();
+
             await expect(
-                freelancerReputation.connect(client1).leaveReview(ethers.ZeroAddress, 5, "Nice")
+                freelancerReputation.connect(client1).leaveReview(await freelancer2.getAddress(), 5, "Nice")
             ).to.be.revertedWith("Freelancer not registered");
         });
 
         it("Should prevent duplicate reviews from the same client", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
+
             await freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 5, "Nice");
+
             await expect(
                 freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 4, "Again")
             ).to.be.revertedWith("Already reviewed this freelancer");
@@ -133,11 +153,14 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should enforce valid rating range (1-5)", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
+
             await expect(
                 freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 0, "Bad")
             ).to.be.revertedWith("Rating must be 1-5");
+
             await expect(
                 freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 6, "Bad")
             ).to.be.revertedWith("Rating must be 1-5");
@@ -145,9 +168,12 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should limit comment length for gas efficiency", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
+
             const longComment = "a".repeat(281);
+
             await expect(
                 freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 5, longComment)
             ).to.be.revertedWith("Comment too long");
@@ -157,9 +183,11 @@ describe("FreelancerReputationSystem", function () {
     describe("Reputation Calculation", function () {
         it("Should correctly calculate average reputation", async function () {
             const { freelancerReputation, freelancer1, client1, client2 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
             await freelancerReputation.connect(client2).registerAsClient();
+
             await freelancerReputation.connect(client1).leaveReview(await freelancer1.getAddress(), 4, "Good");
             await freelancerReputation.connect(client2).leaveReview(await freelancer1.getAddress(), 2, "Okay");
 
@@ -170,6 +198,7 @@ describe("FreelancerReputationSystem", function () {
 
         it("Should handle zero reviews case", async function () {
             const { freelancerReputation, freelancer1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
 
             const [average, count] = await freelancerReputation.getFreelancerReputation(await freelancer1.getAddress());
@@ -189,6 +218,7 @@ describe("FreelancerReputationSystem", function () {
     describe("Client Review Status", function () {
         it("Should correctly track if a client has reviewed a freelancer", async function () {
             const { freelancerReputation, freelancer1, client1 } = await loadFixture(deployContractFixture);
+
             await freelancerReputation.connect(freelancer1).registerAsFreelancer("ipfs://hash");
             await freelancerReputation.connect(client1).registerAsClient();
 

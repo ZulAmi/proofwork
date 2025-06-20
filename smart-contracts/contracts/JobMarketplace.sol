@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import "./ProofToken.sol";
-import "./FreelancerReputation.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./FreelancerReputationSystem.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract JobMarketplace is ReentrancyGuard {
     enum JobStatus {
@@ -92,10 +92,8 @@ contract JobMarketplace is ReentrancyGuard {
 
     function applyForJob(uint256 jobId) external {
         require(jobs[jobId].status == JobStatus.Open, "Job not open");
-        require(
-            reputationSystem.freelancers(msg.sender).isRegistered,
-            "Not a registered freelancer"
-        );
+        (, , , bool isRegistered, ) = reputationSystem.freelancers(msg.sender);
+        require(isRegistered, "Not a registered freelancer");
         // In a real system, you might want to store applications and let the client choose.
         jobs[jobId].freelancer = msg.sender;
         jobs[jobId].status = JobStatus.InProgress;
